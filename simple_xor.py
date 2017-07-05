@@ -22,7 +22,7 @@ with tf.name_scope("cost"):
 with tf.name_scope("train"):
     train_op = tf.train.GradientDescentOptimizer(0.5).minimize(loss_op)
 
-prediction = tf.argmax(tf.nn.softmax(y), 1)
+prediction = tf.argmax(tf.nn.softmax(y), 1, name='prediction')
 true = tf.argmax(y_, 1)
 
 accuracy = tf.reduce_mean(tf.cast(tf.equal(prediction, true), tf.float32))
@@ -38,3 +38,6 @@ with tf.Session() as sess:
 
     acc = sess.run(accuracy, feed_dict={x: samples_x, y_: samples_y})
     print(acc)
+
+    tf.train.Saver().save(sess, 'models/checkpoint.ckpt')
+    tf.train.write_graph(sess.graph_def, 'models/', 'graph.pb', as_text=False)
