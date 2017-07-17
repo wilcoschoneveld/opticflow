@@ -20,31 +20,26 @@ model.add(
     )
 )
 
-model.add(keras.layers.Activation('relu'))
+model.add(keras.layers.TimeDistributed(keras.layers.Conv2D(
+    filters=128,
+    kernel_size=(3, 3),
+    strides=2,
+    activation='relu'
+)))
 
 model.add(keras.layers.TimeDistributed(keras.layers.Conv2D(
     filters=128,
     kernel_size=(3, 3),
-    strides=2
+    strides=2,
+    activation='relu'
 )))
-
-model.add(keras.layers.Activation('relu'))
-
-model.add(keras.layers.TimeDistributed(keras.layers.Conv2D(
-    filters=128,
-    kernel_size=(3, 3),
-    strides=2
-)))
-
-model.add(keras.layers.Activation('relu'))
 
 model.add(keras.layers.TimeDistributed(keras.layers.Conv2D(
     filters=256,
     kernel_size=(3, 3),
-    strides=2
+    strides=2,
+    activation='relu'
 )))
-
-model.add(keras.layers.Activation('relu'))
 
 model.add(keras.layers.TimeDistributed(keras.layers.Flatten()))
 
@@ -58,8 +53,8 @@ model.add(keras.layers.TimeDistributed(keras.layers.Flatten()))
 # ))
 
 model.add(keras.layers.LSTM(
-    units=128,
-    activation='tanh',
+    units=512,
+    activation='relu',
     unroll=True,
     return_sequences=True
 ))
@@ -73,6 +68,10 @@ model.compile(
 
 model.summary()
 
+checkpoints = keras.callbacks.ModelCheckpoint('tmp/log2/weights.{epoch:02d}-{loss:.2f}.h5')
+tensorboard = keras.callbacks.TensorBoard('tmp/log2')
+
 model.fit_generator(data.sequence_batch_generator(20, NUM_STEPS, WINDOW_SIZE),
                     steps_per_epoch=1000,
-                    epochs=10)
+                    epochs=20,
+                    callbacks=[checkpoints, tensorboard])
