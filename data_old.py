@@ -3,7 +3,7 @@ import numpy
 
 MAX_MOVE = 5   # pixels
 
-full_img = scipy.ndimage.imread('garden.jpg', flatten=True)   # (height=4032, width=3024)
+full_img = scipy.ndimage.imread('data/images/train/garden.jpg', flatten=True)   # (height=4032, width=3024)
 
 
 def generate_sample(window_size=240):

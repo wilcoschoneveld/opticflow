@@ -1,7 +1,7 @@
 import time
 
 import tensorflow as tf
-import data
+import data_old
 
 input_batch = tf.placeholder(tf.float32, shape=[None, 64, 64, 2], name='inputs')
 output_batch = tf.placeholder(tf.float32, shape=[None, 2], name='outputs')
@@ -63,7 +63,7 @@ with tf.Session() as sess:
 
     start = time.time()
 
-    for _in, _out in data.generate_batches(10, 64):
+    for _in, _out in data_old.generate_batches(10, 64):
         _, loss = sess.run([train_op, loss_op], feed_dict={input_batch: _in, output_batch: _out})
 
         print('i: {} / loss: {:.4f} / time: {}'.format(i, loss, time.time() - start))
