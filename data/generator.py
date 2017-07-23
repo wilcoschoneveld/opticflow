@@ -17,8 +17,7 @@ class DataGenerator(object):
     def generate_flow(self):
         image = random.choice(self.images)
 
-        scale = np.random.randint(1, self.max_scale)
-        noise = np.random.normal(0, self.noise_level, (2, self.image_size, self.image_size))
+        scale = np.random.random_integers(1, self.max_scale)
         flow = np.random.randint(-self.max_flow, self.max_flow, size=2)
 
         y0 = np.random.randint(self.max_flow*scale, image.shape[0] - self.image_size*scale - self.max_flow*scale)
@@ -30,8 +29,11 @@ class DataGenerator(object):
         image0 = image[y0:y0+self.image_size*scale:scale, x0:x0+self.image_size*scale:scale]
         image1 = image[y1:y1+self.image_size*scale:scale, x1:x1+self.image_size*scale:scale]
 
-        image0 = np.clip(image0 + noise[0], 0, 255).round().astype(np.uint8)
-        image1 = np.clip(image1 + noise[1], 0, 255).round().astype(np.uint8)
+        if self.noise_level > 0:
+            noise = np.random.normal(0, self.noise_level, (2, self.image_size, self.image_size))
+
+            image0 = np.clip(image0 + noise[0], 0, 255).round().astype(np.uint8)
+            image1 = np.clip(image1 + noise[1], 0, 255).round().astype(np.uint8)
 
         return image0, image1, flow
 

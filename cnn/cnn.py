@@ -1,15 +1,16 @@
 import time
-
 import tensorflow as tf
-import data_old
+
+import data.generator
+
 
 input_batch = tf.placeholder(tf.float32, shape=[None, 64, 64, 2], name='inputs')
-output_batch = tf.placeholder(tf.float32, shape=[None, 2], name='outputs')
+target_batch = tf.placeholder(tf.float32, shape=[None, 2], name='targets')
 
 conv1 = tf.layers.conv2d(
     inputs=input_batch,
-    filters=64,
-    kernel_size=7,
+    filters=32,
+    kernel_size=3,
     strides=2,
     activation=tf.nn.relu,
     name='conv1'
@@ -17,8 +18,8 @@ conv1 = tf.layers.conv2d(
 
 conv2 = tf.layers.conv2d(
     inputs=conv1,
-    filters=128,
-    kernel_size=5,
+    filters=64,
+    kernel_size=3,
     strides=2,
     activation=tf.nn.relu,
     name='conv2'
@@ -26,7 +27,7 @@ conv2 = tf.layers.conv2d(
 
 conv3 = tf.layers.conv2d(
     inputs=conv2,
-    filters=256,
+    filters=128,
     kernel_size=3,
     activation=tf.nn.relu,
     name='conv3'
@@ -49,11 +50,13 @@ output = tf.layers.dense(
 )
 
 with tf.name_scope('loss'):
-    loss_op = tf.reduce_mean(tf.square(output - output_batch))
+    loss = tf.reduce_mean(tf.square(output - target_batch))
+    tf.summary.scalar('loss', loss)
 
 with tf.name_scope('train'):
-    train_op = tf.train.AdamOptimizer(1e-4).minimize(loss_op)
+    train_op = tf.train.AdamOptimizer(1e-4).minimize(loss)
 
+merged = tf.summary.merge_all()
 writer = tf.summary.FileWriter("tmp/log", graph=tf.get_default_graph())
 
 with tf.Session() as sess:
@@ -63,9 +66,16 @@ with tf.Session() as sess:
 
     start = time.time()
 
-    for _in, _out in data_old.generate_batches(10, 64):
-        _, loss = sess.run([train_op, loss_op], feed_dict={input_batch: _in, output_batch: _out})
+    gen = data.generator.DataGenerator('data/images/train/*', image_size=64, max_flow=5, max_scale=5, noise_level=5)
 
-        print('i: {} / loss: {:.4f} / time: {}'.format(i, loss, time.time() - start))
+    for epoch in range(1, 500):
 
-        i += 1
+        for j in range(50):
+            inputs, targets = gen.generate_batch(batch_size=100)
+
+            _, loss_value = sess.run([train_op, loss], feed_dict={input_batch: inputs, target_batch: targets})
+
+        print('epoch: {} / loss: {:.4f} / time: {}'.format(epoch, loss_value, time.time() - start))
+
+        summary = sess.run(merged, feed_dict={input_batch: inputs, target_batch: targets})
+        writer.add_summary(summary, epoch)
