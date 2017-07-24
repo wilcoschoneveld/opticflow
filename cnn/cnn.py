@@ -51,12 +51,13 @@ output = tf.layers.dense(
 
 with tf.name_scope('loss'):
     loss = tf.reduce_mean(tf.square(output - target_batch))
-    tf.summary.scalar('loss', loss)
+
+    loss_train = tf.summary.scalar('training', loss)
+    loss_val = tf.summary.scalar('validation', loss)
 
 with tf.name_scope('train'):
     train_op = tf.train.AdamOptimizer(1e-4).minimize(loss)
 
-merged = tf.summary.merge_all()
 writer = tf.summary.FileWriter("tmp/log", graph=tf.get_default_graph())
 
 with tf.Session() as sess:
@@ -66,16 +67,37 @@ with tf.Session() as sess:
 
     start = time.time()
 
-    gen = data.generator.DataGenerator('data/images/train/*', image_size=64, max_flow=5, max_scale=5, noise_level=5)
+    val_inputs, val_targets = data.generator.DataGenerator(
+        pattern='data/images/test/city.jpg',
+        image_size=64,
+        max_flow=5,
+        max_scale=5,
+        noise_level=5,
+        interp='bicubic').generate_batch(batch_size=1000)
 
-    for epoch in range(1, 500):
+    gen = data.generator.DataGenerator(
+        pattern='data/images/train/*',
+        image_size=64,
+        max_flow=5,
+        max_scale=5,
+        noise_level=5,
+        interp='bicubic')
 
-        for j in range(50):
-            inputs, targets = gen.generate_batch(batch_size=100)
+    for step in range(1, 25000):
 
-            _, loss_value = sess.run([train_op, loss], feed_dict={input_batch: inputs, target_batch: targets})
+        inputs, targets = gen.generate_batch(batch_size=100)
 
-        print('epoch: {} / loss: {:.4f} / time: {}'.format(epoch, loss_value, time.time() - start))
+        sess.run(train_op, feed_dict={input_batch: inputs, target_batch: targets})
 
-        summary = sess.run(merged, feed_dict={input_batch: inputs, target_batch: targets})
-        writer.add_summary(summary, epoch)
+        if step % 25 == 0:
+
+            train_loss, train_loss_value = sess.run([loss_train, loss], feed_dict={input_batch: inputs, target_batch: targets})
+
+            val_loss, val_loss_value = sess.run([loss_val, loss], feed_dict={input_batch: val_inputs, target_batch: val_targets})
+
+            print('step: {} / loss: {:.4f} / val: {:.4f} / time: {}'.format(step, train_loss_value, val_loss_value,
+                                                                            time.time() - start))
+
+            writer.add_summary(train_loss, step)
+            writer.add_summary(val_loss, step)
+            writer.flush()
