@@ -68,10 +68,10 @@ class CNN(object):
 
             self.init = tf.global_variables_initializer()
 
-    def train(self, train_generator, validation_data, max_steps, verbose):
+    def train(self, train_generator, validation_data, max_steps, verbose=True, log_path=".logs/latest/"):
 
         with tf.Session(graph=self.graph) as sess:
-            writer = tf.summary.FileWriter("tmp/log", graph=sess.graph)
+            writer = tf.summary.FileWriter(log_path, graph=sess.graph)
 
             sess.run(self.init)
 
