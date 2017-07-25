@@ -34,7 +34,7 @@ class TestGenerator(TestCase):
         plt.show()
 
     def test_all_images(self):
-        gen = DataGenerator('data/images/test/city.jpg', image_size=64, max_flow=10)
+        gen = DataGenerator('data/images/train/*', image_size=64, max_flow=10, max_scale=5)
 
         for i in range(9):
             image0, image1, flow = gen.generate_flow()

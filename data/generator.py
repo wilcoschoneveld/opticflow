@@ -6,9 +6,10 @@ import random
 
 class DataGenerator(object):
 
-    def __init__(self, pattern='images/*', image_size=64, max_flow=10, max_scale=5, noise_level=5, interp='bicubic'):
+    def __init__(self, pattern='images/*', image_size=64, max_flow=10, min_scale=1, max_scale=5, noise_level=5, interp='bicubic'):
         self.image_size = image_size
         self.max_flow = max_flow
+        self.min_scale = min_scale
         self.max_scale = max_scale
         self.noise_level = noise_level
         self.interp = interp
@@ -21,7 +22,7 @@ class DataGenerator(object):
     def generate_flow(self):
         image = random.choice(self.images)
 
-        scale = np.random.randint(1, self.max_scale + 1)
+        scale = np.random.randint(self.min_scale, self.max_scale + 1)
         flow = np.random.randint(-self.max_flow*scale, self.max_flow*scale, size=2)
 
         y0 = np.random.randint(self.max_flow*scale, image.shape[0] - self.image_size*scale - self.max_flow*scale)
