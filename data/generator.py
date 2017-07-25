@@ -34,8 +34,9 @@ class DataGenerator(object):
         image0 = image[y0:y0+self.image_size*scale, x0:x0+self.image_size*scale]
         image1 = image[y1:y1+self.image_size*scale, x1:x1+self.image_size*scale]
 
-        image0 = scipy.misc.imresize(image0, (self.image_size, self.image_size), self.interp)
-        image1 = scipy.misc.imresize(image1, (self.image_size, self.image_size), self.interp)
+        if scale > 1:
+            image0 = scipy.misc.imresize(image0, (self.image_size, self.image_size), self.interp)
+            image1 = scipy.misc.imresize(image1, (self.image_size, self.image_size), self.interp)
 
         if self.noise_level > 0:
             noise = np.random.normal(0, self.noise_level, (2, self.image_size, self.image_size))
