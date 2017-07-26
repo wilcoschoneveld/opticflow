@@ -1,7 +1,5 @@
 from unittest import TestCase
-
 import matplotlib.pyplot as plt
-import numpy as np
 
 from data.generator import DataGenerator
 
@@ -25,7 +23,7 @@ class TestGenerator(TestCase):
         plt.imshow(image1, extent=(a1, b1, a2, b2), cmap='gray', alpha=0.5)
 
     def test_single_image(self):
-        gen = DataGenerator('data/images/test/city.jpg', image_size=240, max_flow=50, max_scale=3, noise_level=20, interp='bicubic')
+        gen = DataGenerator('data/images/test/*', image_size=240, max_flow=50, max_scale=3, noise_level=20, interp='bicubic')
 
         image0, image1, flow = gen.generate_flow()
 

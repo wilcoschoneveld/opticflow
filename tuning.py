@@ -31,7 +31,7 @@ train_generator = DataGenerator(
     interp='bicubic')
 
 validation_data = DataGenerator(
-    pattern='data/images/test/city.jpg',
+    pattern='data/images/test/*',
     image_size=64,
     max_flow=5,
     max_scale=5,
