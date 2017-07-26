@@ -11,7 +11,8 @@ gen = DataGenerator(
     max_flow=5,
     min_scale=3,
     max_scale=3,
-    noise_level=0)
+    noise_level=0,
+    sub_pixel_flow=True)
 
 fast = cv2.FastFeatureDetector_create(threshold=80)
 
@@ -20,8 +21,17 @@ error = np.empty((9, 2))
 for i in range(9):
     image0, image1, flow = gen.generate_flow()
 
-    kp = fast.detect(image0, None)
+    for threshold in np.arange(200, 5, -5):
+        fast.setThreshold(threshold)
+
+        kp = fast.detect(image0, None)
+
+        if len(kp) > 40:
+            break
+
     kp0 = cv2.KeyPoint_convert(kp)
+
+    assert len(kp0)
 
     image0_kp = cv2.drawKeypoints(image0, kp, None, (255, 0, 0))
 
