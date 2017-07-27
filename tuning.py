@@ -23,7 +23,7 @@ from model import CNN
 from data.generator import DataGenerator
 
 train_generator = DataGenerator(
-    pattern='data/images/train/*',
+    pattern='/images/train/*',
     image_size=64,
     max_flow=5,
     max_scale=5,
@@ -31,7 +31,7 @@ train_generator = DataGenerator(
     interp='bicubic')
 
 validation_data = DataGenerator(
-    pattern='data/images/test/*',
+    pattern='/images/test/*',
     image_size=64,
     max_flow=5,
     max_scale=5,
@@ -40,4 +40,6 @@ validation_data = DataGenerator(
 
 cnn = CNN()
 
-cnn.train(train_generator, validation_data, 25000)
+cnn.train(train_generator, validation_data, 1000, log_path='/output/latest/')
+
+# floyd run --cpu --env tensorflow-1.2 --data wilcoschoneveld/datasets/opticflow/1:images --tensorboard "python tuning.py"
