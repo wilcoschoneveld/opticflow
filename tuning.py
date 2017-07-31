@@ -1,23 +1,5 @@
-
-
-# early stopping conditions
-#       xplosion
-#       time
-#       max epoch
-
-
-# overfit
-# try very low learning rate (find min)
-# try very high learning rate (find max)
-# hyperparameter tuning
-# hyperparameter tuning 2 (finer search)
-# more..?
-
-# model function
-# inputs=architecture, preprocess data
-#
-# train function
-# inputs=batch generator, validation generator, max_steps, batch_size, learning_rate, regularization, verbose=True
+import datetime
+import numpy as np
 
 from model import CNN
 from data.generator import DataGenerator
@@ -28,6 +10,7 @@ train_generator = DataGenerator(
     max_flow=5,
     max_scale=5,
     noise_level=5,
+    normalize=True,
     interp='bicubic')
 
 validation_data = DataGenerator(
@@ -36,10 +19,14 @@ validation_data = DataGenerator(
     max_flow=5,
     max_scale=5,
     noise_level=5,
+    normalize=True,
     interp='bicubic').generate_batch(batch_size=100)
 
-cnn = CNN()
+# log_pattern = datetime.datetime.now().strftime('.logs/%Y%m%d-%H%M%S/{}/')
 
-cnn.train(train_generator, validation_data, 1000, log_path='/output/latest/')
+cnn = CNN(split=False, learning_rate=1e-3)
+
+cnn.train(train_generator, validation_data, 50000, log_path='/output')
+
 
 # floyd run --cpu --env tensorflow-1.2 --data wilcoschoneveld/datasets/opticflow/1:images --tensorboard "python tuning.py"

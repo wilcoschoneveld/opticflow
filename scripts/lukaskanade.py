@@ -6,7 +6,7 @@ from data.generator import DataGenerator
 from tests.test_generator import TestGenerator
 
 gen = DataGenerator(
-    pattern='data/images/test/city.jpg',
+    pattern='data/images/test/*',
     image_size=64,
     max_flow=5,
     min_scale=3,

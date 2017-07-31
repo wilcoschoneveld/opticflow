@@ -5,7 +5,16 @@ import tools
 
 class CNN(object):
 
-    def __init__(self, learning_rate=1e-4):
+    @staticmethod
+    def create_conv_layers(input, reuse=False):
+        conv1 = tf.layers.conv2d(input, 16, 4, 2, activation=tf.nn.relu, name='conv1', reuse=reuse)
+        conv2 = tf.layers.conv2d(conv1, 32, 3, 2, activation=tf.nn.relu, name='conv2', reuse=reuse)
+        conv3 = tf.layers.conv2d(conv2, 64, 3, 2, activation=tf.nn.relu, name='conv3', reuse=reuse)
+        conv4 = tf.layers.conv2d(conv3, 128, 3, 2, activation=tf.nn.relu, name='conv4', reuse=reuse)
+
+        return conv4
+
+    def __init__(self, split=False, learning_rate=1e-4, decay_steps=20000, decay_rate=0.5):
         self.graph = tf.Graph()
 
         with self.graph.as_default():
@@ -13,47 +22,22 @@ class CNN(object):
             self.batch_input = tf.placeholder(tf.float32, shape=[None, 64, 64, 2], name='inputs')
             self.batch_target = tf.placeholder(tf.float32, shape=[None, 2], name='targets')
 
-            conv1 = tf.layers.conv2d(
-                inputs=self.batch_input,
-                filters=32,
-                kernel_size=3,
-                strides=2,
-                activation=tf.nn.relu,
-                name='conv1'
-            )
+            if split:
+                split0, split1 = tf.split(self.batch_input, 2, axis=3)
 
-            conv2 = tf.layers.conv2d(
-                inputs=conv1,
-                filters=64,
-                kernel_size=3,
-                strides=2,
-                activation=tf.nn.relu,
-                name='conv2'
-            )
+                conv0 = self.create_conv_layers(split0, reuse=False)
+                flat0 = tools.layers.flatten(conv0)
 
-            conv3 = tf.layers.conv2d(
-                inputs=conv2,
-                filters=128,
-                kernel_size=3,
-                activation=tf.nn.relu,
-                name='conv3'
-            )
+                conv1 = self.create_conv_layers(split1, reuse=True)
+                flat1 = tools.layers.flatten(conv1)
 
-            conv4 = tf.layers.conv2d(
-                inputs=conv3,
-                filters=256,
-                kernel_size=3,
-                strides=2,
-                activation=tf.nn.relu,
-                name='conv4'
-            )
+                concat = tf.concat([flat0, flat1], 1)
+                neck = tf.layers.dense(concat, 200, tf.nn.relu)
+            else:
+                conv = self.create_conv_layers(self.batch_input)
+                neck = tools.layers.flatten(conv)
 
-            flatten = tools.layers.flatten(conv4)
-
-            output = tf.layers.dense(
-                inputs=flatten,
-                units=2
-            )
+            output = tf.layers.dense(inputs=neck, units=2)
 
             with tf.name_scope('loss'):
                 self.loss = tf.reduce_mean(tf.square(output - self.batch_target))
@@ -64,7 +48,13 @@ class CNN(object):
                 }
 
             with tf.name_scope('train'):
-                self.train_op = tf.train.AdamOptimizer(learning_rate).minimize(self.loss)
+                global_step = tf.Variable(0, trainable=False)
+
+                lr_op = tf.train.exponential_decay(learning_rate, global_step, decay_steps, decay_rate, True)
+
+                self.train_op = tf.train.AdamOptimizer(lr_op).minimize(self.loss, global_step)
+
+                self.summaries['lr'] = tf.summary.scalar('learning_rate', lr_op)
 
             self.init = tf.global_variables_initializer()
 
@@ -96,9 +86,12 @@ class CNN(object):
                         self.batch_target: validation_data[1]
                     })
 
+                    lr_summary = sess.run(self.summaries['lr'])
+
                     if verbose:
                         print('step: {} / loss: {:.4f} / val: {:.4f}'.format(step, train_loss, val_loss))
 
                     writer.add_summary(train_summary, step)
                     writer.add_summary(val_summary, step)
+                    writer.add_summary(lr_summary, step)
                     writer.flush()
