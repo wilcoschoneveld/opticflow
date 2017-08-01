@@ -33,11 +33,7 @@ prediction = cnn.predict('/home/wilco/Documents/test/www.floydhub.com/viewer/dat
 
 error = np.mean(np.square(prediction - targets), axis=1)
 
-prediction2 = cnn.predict('/home/wilco/Documents/test/test3/www.floydhub.com/viewer/data/MaZYxftMMsqdQNzaf9LnwT/RAtTj8Q9G6thsHK8E4L5Ba/model.ckpt', inputs)
-
-error2 = np.mean(np.square(prediction - targets), axis=1)
-
-error4 = np.mean(np.square(targets - 0), axis=1)
+error3 = np.mean(np.square(targets - 0), axis=1)
 
 gen.normalize = False
 
@@ -47,13 +43,12 @@ fastlk = FastLK(40, True)
 
 flows = fastlk.batch_predict(inputs)
 
-print(len(flows))
+error2 = np.mean(np.square(targets - flows), axis=1)
 
-error3 = np.mean(np.square(targets - flows), axis=1)
 
-plt.violinplot([error, error2, error3, error4], showmeans=True, showextrema=True)
+plt.violinplot([error, error2, error3], showmeans=True, showextrema=True, points=1000)
 plt.ylim(-1, 26)
-plt.gca().set_xticks([1, 2, 3, 4])
-plt.gca().set_xticklabels(['cnn1', 'cnn2', 'flk', '0p'])
+plt.gca().set_xticks([1, 2, 3])
+plt.gca().set_xticklabels(['CNN', 'FAST+LK', '0p'])
 
 plt.show()
