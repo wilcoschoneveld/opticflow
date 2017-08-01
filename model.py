@@ -5,17 +5,31 @@ import tools
 
 class CNN(object):
 
-    @staticmethod
-    def create_conv_layers(input, reuse=False):
-        conv1 = tf.layers.conv2d(input, 16, 4, 2, activation=tf.nn.relu, name='conv1', reuse=reuse)
-        conv2 = tf.layers.conv2d(conv1, 32, 3, 2, activation=tf.nn.relu, name='conv2', reuse=reuse)
-        conv3 = tf.layers.conv2d(conv2, 64, 3, 2, activation=tf.nn.relu, name='conv3', reuse=reuse)
-        conv4 = tf.layers.conv2d(conv3, 128, 3, 2, activation=tf.nn.relu, name='conv4', reuse=reuse)
+    def create_conv_layers(self, head, reuse=False):
+        for i, (filters, kernel_size, strides) in enumerate(self.config):
+            head = tf.layers.conv2d(
+                inputs=head,
+                filters=filters,
+                kernel_size=kernel_size,
+                strides=strides,
+                activation=tf.nn.relu,
+                name='conv' + str(i + 1),
+                reuse=reuse)
 
-        return conv4
+        return head
 
-    def __init__(self, split=False, normalize=True, fully_connected=None, learning_rate=1e-4, decay_steps=20000, decay_rate=0.5):
+    def __init__(self, config=None, split=False, normalize=True, fully_connected=None,
+                 learning_rate=1e-4, decay_steps=20000, decay_rate=0.5):
         self.graph = tf.Graph()
+
+        self.config = config or [
+            [16, 4, 2],
+            [32, 3, 2],
+            [64, 3, 2],
+            [128, 3, 2]
+        ]
+
+        print(self.config)
 
         with self.graph.as_default():
 
@@ -108,8 +122,7 @@ class CNN(object):
                     writer.flush()
 
                 if step % 1000 == 0:
-
-                    self.saver.save(sess, log_path + 'model.ckpt')
+                    self.saver.save(sess, log_path + 'step%i.ckpt' % step)
 
     def predict(self, checkpoint_file, input_batch):
 
