@@ -37,10 +37,10 @@ class CNN(object):
                 conv = self.create_conv_layers(self.batch_input)
                 neck = tools.layers.flatten(conv)
 
-            output = tf.layers.dense(inputs=neck, units=2)
+            self.output = tf.layers.dense(inputs=neck, units=2)
 
             with tf.name_scope('loss'):
-                self.loss = tf.reduce_mean(tf.square(output - self.batch_target))
+                self.loss = tf.reduce_mean(tf.square(self.output - self.batch_target))
 
                 self.summaries = {
                     'train': tf.summary.scalar('training', self.loss),
@@ -57,6 +57,7 @@ class CNN(object):
                 self.summaries['lr'] = tf.summary.scalar('learning_rate', lr_op)
 
             self.init = tf.global_variables_initializer()
+            self.saver = tf.train.Saver()
 
     def train(self, train_generator, validation_data, max_steps, verbose=True, log_path=".logs/latest/"):
 
@@ -95,3 +96,18 @@ class CNN(object):
                     writer.add_summary(val_summary, step)
                     writer.add_summary(lr_summary, step)
                     writer.flush()
+
+                if step % 1000 == 0:
+
+                    self.saver.save(sess, log_path + 'model.ckpt')
+
+    def predict(self, checkpoint_file, input_batch):
+
+        with tf.Session(graph=self.graph) as sess:
+            self.saver.restore(sess, checkpoint_file)
+
+            output = sess.run(self.output, feed_dict={
+                self.batch_input: input_batch
+            })
+
+        return output
