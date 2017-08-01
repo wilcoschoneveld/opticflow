@@ -14,7 +14,7 @@ class CNN(object):
 
         return conv4
 
-    def __init__(self, split=False, normalize=True, learning_rate=1e-4, decay_steps=20000, decay_rate=0.5):
+    def __init__(self, split=False, normalize=True, fully_connected=None, learning_rate=1e-4, decay_steps=20000, decay_rate=0.5):
         self.graph = tf.Graph()
 
         with self.graph.as_default():
@@ -39,13 +39,15 @@ class CNN(object):
                 conv1 = self.create_conv_layers(split1, reuse=True)
                 flat1 = tools.layers.flatten(conv1)
 
-                concat = tf.concat([flat0, flat1], 1)
-                head = tf.layers.dense(concat, 200, tf.nn.relu)
+                head = tf.concat([flat0, flat1], 1)
             else:
                 conv = self.create_conv_layers(head)
                 head = tools.layers.flatten(conv)
 
-            self.output = tf.layers.dense(inputs=head, units=2)
+            if fully_connected:
+                head = tf.layers.dense(head, fully_connected, tf.nn.relu, name='FC')
+
+            self.output = tf.layers.dense(inputs=head, units=2, name='output')
 
             with tf.name_scope('loss'):
                 self.loss = tf.reduce_mean(tf.square(self.output - self.batch_target))
