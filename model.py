@@ -14,7 +14,7 @@ class CNN(object):
 
         return conv4
 
-    def __init__(self, split=False, learning_rate=1e-4, decay_steps=20000, decay_rate=0.5):
+    def __init__(self, split=False, normalize=True, learning_rate=1e-4, decay_steps=20000, decay_rate=0.5):
         self.graph = tf.Graph()
 
         with self.graph.as_default():
@@ -22,8 +22,16 @@ class CNN(object):
             self.batch_input = tf.placeholder(tf.float32, shape=[None, 64, 64, 2], name='inputs')
             self.batch_target = tf.placeholder(tf.float32, shape=[None, 2], name='targets')
 
+            if normalize:
+                with tf.name_scope('normalize'):
+                    mean, var = tf.nn.moments(self.batch_input, axes=[1, 2], keep_dims=True)
+
+                    head = tf.divide(tf.subtract(self.batch_input, mean), var)
+            else:
+                head = self.batch_input
+
             if split:
-                split0, split1 = tf.split(self.batch_input, 2, axis=3)
+                split0, split1 = tf.split(head, 2, axis=3)
 
                 conv0 = self.create_conv_layers(split0, reuse=False)
                 flat0 = tools.layers.flatten(conv0)
@@ -32,12 +40,12 @@ class CNN(object):
                 flat1 = tools.layers.flatten(conv1)
 
                 concat = tf.concat([flat0, flat1], 1)
-                neck = tf.layers.dense(concat, 200, tf.nn.relu)
+                head = tf.layers.dense(concat, 200, tf.nn.relu)
             else:
-                conv = self.create_conv_layers(self.batch_input)
-                neck = tools.layers.flatten(conv)
+                conv = self.create_conv_layers(head)
+                head = tools.layers.flatten(conv)
 
-            self.output = tf.layers.dense(inputs=neck, units=2)
+            self.output = tf.layers.dense(inputs=head, units=2)
 
             with tf.name_scope('loss'):
                 self.loss = tf.reduce_mean(tf.square(self.output - self.batch_target))

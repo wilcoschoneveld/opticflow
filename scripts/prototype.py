@@ -15,6 +15,6 @@ validation_data = DataGenerator(
     max_scale=1,
     noise_level=0).generate_batch(batch_size=1000)
 
-cnn = CNN()
+cnn = CNN(split=False, normalize=False, learning_rate=1e-4)
 
 cnn.train(train_generator, validation_data, 25000)

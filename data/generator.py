@@ -7,14 +7,13 @@ import random
 class DataGenerator(object):
 
     def __init__(self, pattern='images/*', image_size=64, max_flow=10, min_scale=1, max_scale=5, noise_level=5,
-                 sub_pixel_flow=True, normalize=False, interp='bicubic'):
+                 sub_pixel_flow=True, interp='bicubic'):
         self.image_size = image_size
         self.max_flow = max_flow
         self.min_scale = min_scale
         self.max_scale = max_scale
         self.noise_level = noise_level
         self.sub_pixel_flow = sub_pixel_flow
-        self.normalize = normalize
         self.interp = interp
 
         self.images = [scipy.misc.imread(f, flatten=True) for f in glob.glob(pattern)]
@@ -49,16 +48,10 @@ class DataGenerator(object):
         if self.noise_level > 0:
             noise = np.random.normal(0, self.noise_level, (2, self.image_size, self.image_size))
 
-            image0 = np.clip(image0 + noise[0], 0, 255)
-            image1 = np.clip(image1 + noise[1], 0, 255)
+            image0 = np.clip(image0 + noise[0], 0, 255).astype(np.uint8)
+            image1 = np.clip(image1 + noise[1], 0, 255).astype(np.uint8)
 
-        if self.normalize:
-            norm0 = (image0 - np.mean(image0)) / np.var(image0)
-            norm1 = (image1 - np.mean(image1)) / np.var(image1)
-
-            return norm0, norm1, flow
-
-        return image0.astype(np.uint8), image1.astype(np.uint8), flow
+        return image0, image1, flow
 
     def generate_batch(self, batch_size):
         inputs = np.empty((batch_size, self.image_size, self.image_size, 2))

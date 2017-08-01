@@ -17,7 +17,7 @@ overfit_inputs, overfit_targets = DataGenerator(
     interp='bicubic').generate_batch(batch_size=100)
 
 validation_data = DataGenerator(
-    pattern='data/images/test/city.jpg',
+    pattern='data/images/test/*',
     image_size=64,
     max_flow=5,
     max_scale=5,
