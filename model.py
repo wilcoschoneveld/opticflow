@@ -29,8 +29,6 @@ class CNN(object):
             [128, 3, 2]
         ]
 
-        print(self.config)
-
         with self.graph.as_default():
 
             self.batch_input = tf.placeholder(tf.float32, shape=[None, 64, 64, 2], name='inputs')
