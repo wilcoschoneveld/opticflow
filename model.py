@@ -21,6 +21,7 @@ class CNN(object):
     def __init__(self, config=None, split=False, normalize=True, fully_connected=None,
                  learning_rate=1e-4, decay_steps=20000, decay_rate=0.5):
         self.graph = tf.Graph()
+        self.summaries = {}
 
         self.config = config or [
             [16, 4, 2],
@@ -59,15 +60,15 @@ class CNN(object):
             if fully_connected:
                 head = tf.layers.dense(head, fully_connected, tf.nn.relu, name='FC')
 
+            self.summaries['head'] = tf.summary.histogram('head', head)
+
             self.output = tf.layers.dense(inputs=head, units=2, name='output')
 
             with tf.name_scope('loss'):
                 self.loss = tf.reduce_mean(tf.square(self.output - self.batch_target))
 
-                self.summaries = {
-                    'train': tf.summary.scalar('training', self.loss),
-                    'val': tf.summary.scalar('validation', self.loss)
-                }
+                self.summaries['train'] = tf.summary.scalar('training', self.loss)
+                self.summaries['val'] = tf.summary.scalar('validation', self.loss)
 
             with tf.name_scope('train'):
                 global_step = tf.Variable(0, trainable=False)
@@ -104,7 +105,7 @@ class CNN(object):
                         self.batch_target: targets
                     })
 
-                    val_summary, val_loss = sess.run([self.summaries['val'], self.loss], feed_dict={
+                    val_summary, head_summary, val_loss = sess.run([self.summaries['val'], self.summaries['head'], self.loss], feed_dict={
                         self.batch_input: validation_data[0],
                         self.batch_target: validation_data[1]
                     })
@@ -116,6 +117,7 @@ class CNN(object):
 
                     writer.add_summary(train_summary, step)
                     writer.add_summary(val_summary, step)
+                    writer.add_summary(head_summary, step)
                     writer.add_summary(lr_summary, step)
                     writer.flush()
 

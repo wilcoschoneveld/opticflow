@@ -16,7 +16,7 @@ gen = DataGenerator(
     sub_pixel_flow=False)
 
 # gen = DataGenerator(
-#     pattern='data/images/train/*',
+#     pattern='data/images/*/*',
 #     image_size=64,
 #     max_flow=5,
 #     max_scale=5,
@@ -36,7 +36,7 @@ error3 = np.mean(np.square(targets - 0), axis=1)
 
 cnn = CNN(split=False, normalize=True)
 
-prediction = cnn.predict('.logs/floyd/small/longrun-saved/step1000.ckpt', inputs)
+prediction = cnn.predict('.logs/floyd/small/longrun-saved/step80000.ckpt', inputs)
 
 error = np.mean(np.square(prediction - targets), axis=1)
 
@@ -45,7 +45,7 @@ error = np.mean(np.square(prediction - targets), axis=1)
 
 cnn2 = CNN(split=True, normalize=True, fully_connected=500)
 
-prediction = cnn2.predict('.logs/floyd/split/simple-saved/step6000.ckpt', inputs)
+prediction = cnn2.predict('.logs/floyd/split/simple-saved/step44000.ckpt', inputs)
 
 error4 = np.mean(np.square(prediction - targets), axis=1)
 
