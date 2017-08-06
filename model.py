@@ -63,12 +63,16 @@ class CNN(object):
             self.summaries['head'] = tf.summary.histogram('head', head)
 
             self.output = tf.layers.dense(inputs=head, units=2, name='output')
+            self.accuracy = tf.layers.dense(inputs=head, units=1, activation=tf.exp, name='accuracy')
 
             with tf.name_scope('loss'):
-                self.loss = tf.reduce_mean(tf.square(self.output - self.batch_target))
+                self.loss = tf.reduce_mean(tf.squared_difference(self.output, self.batch_target))
 
                 self.summaries['train'] = tf.summary.scalar('training', self.loss)
                 self.summaries['val'] = tf.summary.scalar('validation', self.loss)
+
+            with tf.name_scope('accuracy_loss'):
+                self.accuracy_loss = tf.reduce_mean(tf.squared_difference(self.accuracy, tf.exp(-0.25 * self.loss)))
 
             with tf.name_scope('train'):
                 global_step = tf.Variable(0, trainable=False)
@@ -76,8 +80,10 @@ class CNN(object):
                 lr_op = tf.train.exponential_decay(learning_rate, global_step, decay_steps, decay_rate, True)
 
                 self.train_op = tf.train.AdamOptimizer(lr_op).minimize(self.loss, global_step)
-
                 self.summaries['lr'] = tf.summary.scalar('learning_rate', lr_op)
+
+                acc_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, 'accuracy')
+                self.train_acc_op = tf.train.AdamOptimizer(1e-4).minimize(self.accuracy_loss, var_list=acc_vars)
 
             self.init = tf.global_variables_initializer()
             self.saver = tf.train.Saver()
