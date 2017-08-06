@@ -63,7 +63,7 @@ class CNN(object):
             self.summaries['head'] = tf.summary.histogram('head', head)
 
             self.output = tf.layers.dense(inputs=head, units=2, name='output')
-            self.accuracy = tf.layers.dense(inputs=head, units=1, activation=tf.exp, name='accuracy')
+            self.accuracy = tf.layers.dense(inputs=head, units=1, activation=lambda x: tf.exp(-0.25*x), name='accuracy')
 
             with tf.name_scope('loss'):
                 self.loss = tf.reduce_mean(tf.squared_difference(self.output, self.batch_target))
@@ -72,7 +72,9 @@ class CNN(object):
                 self.summaries['val'] = tf.summary.scalar('validation', self.loss)
 
             with tf.name_scope('accuracy_loss'):
-                self.accuracy_loss = tf.reduce_mean(tf.squared_difference(self.accuracy, tf.exp(-0.25 * self.loss)))
+                self.accuracy_loss = tf.reduce_mean(tf.squared_difference(self.accuracy, tf.exp(-0.25*self.loss)))
+
+                self.summaries['train'] = tf.summary.scalar('training', self.accuracy_loss)
 
             with tf.name_scope('train'):
                 global_step = tf.Variable(0, trainable=False)
