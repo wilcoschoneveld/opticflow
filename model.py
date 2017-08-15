@@ -57,6 +57,8 @@ class CNN(object):
                 conv = self.create_conv_layers(head)
                 head = tools.layers.flatten(conv)
 
+            self.tmp = head
+
             if fully_connected:
                 head = tf.layers.dense(head, fully_connected, tf.nn.relu, name='FC')
 
@@ -74,7 +76,7 @@ class CNN(object):
             with tf.name_scope('accuracy_loss'):
                 self.accuracy_loss = tf.reduce_mean(tf.squared_difference(self.accuracy, tf.exp(-0.25*self.loss)))
 
-                self.summaries['train'] = tf.summary.scalar('training', self.accuracy_loss)
+                self.summaries['acc'] = tf.summary.scalar('training', self.accuracy_loss)
 
             with tf.name_scope('train'):
                 global_step = tf.Variable(0, trainable=False)
@@ -88,7 +90,7 @@ class CNN(object):
                 self.train_acc_op = tf.train.AdamOptimizer(1e-4).minimize(self.accuracy_loss, var_list=acc_vars)
 
             self.init = tf.global_variables_initializer()
-            self.saver = tf.train.Saver()
+            self.saver = tf.train.Saver(max_to_keep=10)
 
     def train(self, train_generator, validation_data, max_steps, verbose=True, log_path=".logs/latest/"):
 
@@ -96,6 +98,8 @@ class CNN(object):
             writer = tf.summary.FileWriter(log_path, graph=sess.graph)
 
             sess.run(self.init)
+
+            self.saver.save(sess, log_path + 'init.ckpt')
 
             for step in range(1, max_steps + 1):
 

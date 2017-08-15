@@ -13,7 +13,7 @@ gen = DataGenerator(
     min_scale=3,
     max_scale=3,
     noise_level=0,
-    sub_pixel_flow=False)
+    sub_pixel_flow=True)
 
 # gen = DataGenerator(
 #     pattern='data/images/*/*',
@@ -61,14 +61,23 @@ error2 = np.mean(np.square(targets - flows), axis=1)
 
 # PLOT
 
+# print(np.min(error2), np.max(error2))
+# plt.hist([error2])
+# plt.show()
+
+print('CNN', np.mean(error))
+print('split-CNN', np.mean(error4))
+print('FAST+LK', np.mean(error2))
+print('0p', np.mean(error3))
+
 plt.violinplot([error, error4, error2, error3], showmeans=True, showextrema=True, points=1000)
-plt.ylim(-1, 26)
+# plt.ylim(-0.5, gen.max_flow ** 2 + 1)
+plt.ylim(-0.25, 4.5)
 plt.gca().set_xticks([1, 2, 3, 4])
-plt.gca().set_xticklabels(['CNN', 'CNN-split', 'FAST+LK', '0p'])
+plt.gca().set_xticklabels(['CNN', 'split-CNN', 'FAST+LK', '0p'])
 plt.ylabel('mean squared error (MSE)')
 
 plt.figure()
-plt.plot([1, 2], [3, 4])
 
 for i in range(25):
     plt.subplot(5, 5, i + 1)

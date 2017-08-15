@@ -19,10 +19,16 @@ validation_data = DataGenerator(
 
 # log_pattern = datetime.datetime.now().strftime('.logs/%Y%m%d-%H%M%S/{}/')
 
-cnn = CNN(split=False, normalize=True, learning_rate=1e-3)
-# cnn = CNN(split=True, normalize=True, learning_rate=2e-4)
+# cnn = CNN(split=False, normalize=True, learning_rate=1e-3)
 
-cnn.train(train_generator, validation_data, 100000, log_path='/output/')
+# config = [[14, 3, 2],
+#           [28, 3, 2],
+#           [56, 3, 2],
+#           [112, 3, 2]]
+
+cnn = CNN(split=True, fully_connected=500, normalize=True, learning_rate=2e-4)
+
+cnn.train(train_generator, validation_data, 5000, log_path='/output/')
 
 
 # floyd run --cpu --env tensorflow-1.2 --data wilcoschoneveld/datasets/opticflow/1:images --tensorboard "python tuning.py"

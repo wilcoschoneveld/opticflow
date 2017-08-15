@@ -10,13 +10,13 @@ from tools.fastlk import FastLK
 cap = cv2.VideoCapture(0)
 
 
-cnn = CNN(split=False, normalize=True)
-sess = tf.Session(graph=cnn.graph)
-cnn.saver.restore(sess, '.logs/floyd/small/longrun-saved/step80000.ckpt')
-
-# cnn = CNN(split=True, normalize=True, fully_connected=500)
+# cnn = CNN(split=False, normalize=True)
 # sess = tf.Session(graph=cnn.graph)
-# cnn.saver.restore(sess, '.logs/floyd/split/simple-saved/step44000.ckpt')
+# cnn.saver.restore(sess, '.logs/floyd/small/longrun-saved/step80000.ckpt')
+
+cnn = CNN(split=True, normalize=True, fully_connected=500)
+sess = tf.Session(graph=cnn.graph)
+cnn.saver.restore(sess, '.logs/output/step2000.ckpt')
 
 fastlk = FastLK(40, True)
 
@@ -51,8 +51,11 @@ while True:
     input_pair[0, :, :, 0] = image0
     input_pair[0, :, :, 1] = image1
 
-    flow = sess.run(cnn.output, feed_dict={cnn.batch_input: input_pair})[0]
+    acc, flow = sess.run([cnn.accuracy, cnn.output], feed_dict={cnn.batch_input: input_pair})
+    flow = flow[0]
     flow2 = fastlk.predict(image0, image1)
+
+    print(acc)
 
     dx = (dx - flow[0]) % 64
     dy = (dy - flow[1]) % 64

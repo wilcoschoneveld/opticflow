@@ -1,6 +1,7 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from model import CNN
 
@@ -24,25 +25,31 @@ def plot_weights(name):
 
     full = np.flipud(full)
     v = 3 * np.std(weights)
-    plt.imshow(full, cmap='PiYG', vmin=-v, vmax=v, extent=(0, weights.shape[3], 0, weights.shape[2]))
+    im = plt.imshow(full, cmap='PiYG', vmin=-v, vmax=v, extent=(0, weights.shape[3], 0, weights.shape[2]))
 
     # full = np.flipud(full) ** 2
     # plt.imshow(full, cmap='gray', extent=(0, weights.shape[3], 0, weights.shape[2]))
 
-    plt.colorbar()
+    plt.xlabel('convolution filter')
+    plt.ylabel('input layer')
+
+    divider = make_axes_locatable(plt.gca())
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    plt.colorbar(im, cax=cax)
     plt.show()
 
 
-cnn = CNN(split=False, normalize=True)
-# cnn = CNN(split=True, fully_connected=500, normalize=True)
+cnn = CNN(split=True, fully_connected=500, normalize=True)
 
 with tf.Session(graph=cnn.graph) as sess:
-    cnn.saver.restore(sess, '.logs/floyd/small/longrun-saved/step80000.ckpt')
-    # cnn.saver.restore(sess, '.logs/floyd/split/simple-saved/step44000.ckpt')
+    cnn.saver.restore(sess, '.logs/floyd/split/simple-saved/step44000.ckpt')
 
     for v in tf.trainable_variables():
         print(v)
 
+    plot_weights('conv1/kernel:0')
+    plot_weights('conv2/kernel:0')
+    plot_weights('conv3/kernel:0')
     plot_weights('conv4/kernel:0')
 
     # weights = sess.run(find_variable('output/kernel:0'))
