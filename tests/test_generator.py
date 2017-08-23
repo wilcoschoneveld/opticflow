@@ -1,7 +1,7 @@
 from unittest import TestCase
 import matplotlib.pyplot as plt
 
-from data.generator import DataGenerator
+from models.generator import DataGenerator
 
 
 class TestGenerator(TestCase):
@@ -23,7 +23,7 @@ class TestGenerator(TestCase):
         plt.imshow(image1, extent=(a1, b1, a2, b2), cmap='gray', alpha=0.5)
 
     def test_single_image(self):
-        gen = DataGenerator('data/images/test/*', image_size=240, max_flow=50, max_scale=3, noise_level=20, interp='bicubic')
+        gen = DataGenerator('data/test/*', image_size=240, max_flow=50, max_scale=3, noise_level=20, interp='bicubic')
 
         image0, image1, flow = gen.generate_flow()
 
@@ -32,7 +32,7 @@ class TestGenerator(TestCase):
         plt.show()
 
     def test_all_images(self):
-        gen = DataGenerator('data/images/train/*', image_size=64, max_flow=10, max_scale=5)
+        gen = DataGenerator('data/train/*', image_size=64, max_flow=10, max_scale=5)
 
         for i in range(9):
             image0, image1, flow = gen.generate_flow()
@@ -43,7 +43,7 @@ class TestGenerator(TestCase):
         plt.show()
 
     def test_batch(self):
-        gen = DataGenerator('data/images/train/*')
+        gen = DataGenerator('data/train/*')
 
         inputs, targets = gen.generate_batch(100)
 

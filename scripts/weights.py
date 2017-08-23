@@ -1,9 +1,9 @@
-import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+import tensorflow as tf
 
-from model import CNN
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from models.cnn import CNN
 
 
 def find_variable(name):
@@ -42,17 +42,9 @@ def plot_weights(name):
 cnn = CNN(split=True, fully_connected=500, normalize=True)
 
 with tf.Session(graph=cnn.graph) as sess:
-    cnn.saver.restore(sess, '.logs/floyd/split/simple-saved/step44000.ckpt')
-
-    for v in tf.trainable_variables():
-        print(v)
+    cnn.saver.restore(sess, 'checkpoints/split/step44000.ckpt')
 
     plot_weights('conv1/kernel:0')
     plot_weights('conv2/kernel:0')
     plot_weights('conv3/kernel:0')
     plot_weights('conv4/kernel:0')
-
-    # weights = sess.run(find_variable('output/kernel:0'))
-    #
-    # plt.hist(weights, 100)
-    # plt.show()

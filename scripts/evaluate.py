@@ -1,13 +1,14 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
-from data.generator import DataGenerator
-from model import CNN
+from models.cnn import CNN
+from models.generator import DataGenerator
+from models.fastlk import FastLK
+
 from tests.test_generator import TestGenerator
-from tools.fastlk import FastLK
 
 gen = DataGenerator(
-    pattern='data/images/test/*',
+    pattern='data/test/*',
     image_size=64,
     max_flow=5,
     min_scale=3,
@@ -16,7 +17,7 @@ gen = DataGenerator(
     sub_pixel_flow=True)
 
 # gen = DataGenerator(
-#     pattern='data/images/*/*',
+#     pattern='data/*/*',
 #     image_size=64,
 #     max_flow=5,
 #     max_scale=5,
@@ -36,7 +37,7 @@ error3 = np.mean(np.square(targets - 0), axis=1)
 
 cnn = CNN(split=False, normalize=True)
 
-prediction = cnn.predict('.logs/floyd/small/longrun-saved/step80000.ckpt', inputs)
+prediction = cnn.predict('checkpoints/normal/step81000.ckpt', inputs)
 
 error = np.mean(np.square(prediction - targets), axis=1)
 
@@ -45,7 +46,7 @@ error = np.mean(np.square(prediction - targets), axis=1)
 
 cnn2 = CNN(split=True, normalize=True, fully_connected=500)
 
-prediction = cnn2.predict('.logs/floyd/split/simple-saved/step44000.ckpt', inputs)
+prediction = cnn2.predict('checkpoints/split/step44000.ckpt', inputs)
 
 error4 = np.mean(np.square(prediction - targets), axis=1)
 
@@ -61,18 +62,13 @@ error2 = np.mean(np.square(targets - flows), axis=1)
 
 # PLOT
 
-# print(np.min(error2), np.max(error2))
-# plt.hist([error2])
-# plt.show()
-
 print('CNN', np.mean(error))
 print('split-CNN', np.mean(error4))
 print('FAST+LK', np.mean(error2))
 print('0p', np.mean(error3))
 
 plt.violinplot([error, error4, error2, error3], showmeans=True, showextrema=True, points=1000)
-# plt.ylim(-0.5, gen.max_flow ** 2 + 1)
-plt.ylim(-0.25, 4.5)
+plt.ylim(-0.5, gen.max_flow ** 2 + 1)
 plt.gca().set_xticks([1, 2, 3, 4])
 plt.gca().set_xticklabels(['CNN', 'split-CNN', 'FAST+LK', '0p'])
 plt.ylabel('mean squared error (MSE)')

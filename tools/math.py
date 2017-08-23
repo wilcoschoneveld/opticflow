@@ -1,7 +1,13 @@
 import numpy as np
 from scipy.spatial.distance import cdist, euclidean
 
+
 def geometric_median(X, eps=1e-5):
+    """Yehuda Vardi and Cun-Hui Zhang's algorithm for the geometric median.
+
+    Original paper: http://www.pnas.org/content/97/4/1423.full.pdf
+    Implementation taken from: https://stackoverflow.com/a/30305181/1798137
+    """
     y = np.mean(X, 0)
 
     while True:

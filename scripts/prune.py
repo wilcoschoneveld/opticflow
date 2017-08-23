@@ -1,13 +1,11 @@
-import tensorflow as tf
-import matplotlib.pyplot as plt
 import numpy as np
+import tensorflow as tf
 
-from data.generator import DataGenerator
-from model import CNN
-
+from models.generator import DataGenerator
+from models.cnn import CNN
 
 gen = DataGenerator(
-    pattern='data/images/test/*',
+    pattern='data/test/*',
     image_size=64,
     max_flow=5,
     max_scale=5,
@@ -41,11 +39,11 @@ def prune_layer(name, amount):
 
 
 with tf.Session(graph=cnn.graph) as sess:
-    cnn.saver.restore(sess, '.logs/floyd/split/with-accuracy-saved/step42000.ckpt')
+    cnn.saver.restore(sess, 'checkpoints/split/step44000.ckpt')
 
     _, loss = sess.run([cnn.output, cnn.loss], feed_dict={cnn.batch_input: data, cnn.batch_target: targets})
 
-    print(loss)
+    print('before pruning loss: ', loss)
 
     prune_layer('conv1/kernel:0', 0.2)
     prune_layer('conv2/kernel:0', 0.2)
@@ -54,5 +52,5 @@ with tf.Session(graph=cnn.graph) as sess:
 
     _, loss2 = sess.run([cnn.output, cnn.loss], feed_dict={cnn.batch_input: data, cnn.batch_target: targets})
 
-    print(loss2)
-    print(100*loss2/loss)
+    print('after pruning loss: ', loss2)
+    print('difference (%): ', 100 * (loss2-loss) / loss)
